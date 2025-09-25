@@ -36,7 +36,7 @@ func (v *Validator) ListValidators() []string {
 	return vals
 }
 
-func (v *Validator) Validate(s interface{}) error {
+func (v *Validator) Validate(s any) error {
 	// todo: parse internal structure here and search for data
 	if v == nil {
 		return errors.New("cannot validate nil")
@@ -77,8 +77,19 @@ func (v *Validator) proceedTags(fieldValue reflect.Value, fieldType reflect.Stru
 		if tag == "" {
 			continue
 		}
+		var val *Value = &Value{val: fieldValue, name: fieldType.Name}
+		// if we have param - put it into Value field
+		splitted := strings.Split(tag, "=")
+		tag = splitted[0]
+
+		withVal := len(splitted) == 2
+
+		if withVal {
+			val.param = splitted[1]
+		}
+
 		if validator, ok := v.validators[tag]; ok {
-			if err := validator(&Value{val: fieldValue}); err != nil {
+			if err := validator(val); err != nil {
 				return CurrentErrorFormatFunc(fieldType, fieldValue, err)
 			}
 		}
