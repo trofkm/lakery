@@ -62,6 +62,32 @@ var _ = Describe("Validator", func() {
 			Expect(v.Validate(s)).To(Succeed())
 		})
 	})
+	Context("each with invalid", func() {
+		It("empty parameters", func() {
+			type S struct {
+				Creds []string `lakery:"each:{}"`
+			}
+			v := lakery.NewValidator()
+			s := S{Creds: []string{"a", "bb", "ccc"}}
+			Expect(v.Validate(s)).To(Succeed())
+		})
+		It("unclosed parantheses with no params", func() {
+			type S struct {
+				Creds []string `lakery:"each:{"`
+			}
+			v := lakery.NewValidator()
+			s := S{Creds: []string{"a", "bb", "ccc"}}
+			Expect(v.Validate(s)).To(Succeed())
+		})
+		It("unclosed parantheses with no params", func() {
+			type S struct {
+				Creds []string `lakery:"each:{min=100"`
+			}
+			v := lakery.NewValidator()
+			s := S{Creds: []string{"a", "bb", "ccc"}}
+			Expect(v.Validate(s)).To(Succeed())
+		})
+	})
 
 	Context("each for string slice", func() {
 		type S struct {
