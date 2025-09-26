@@ -18,9 +18,12 @@ type Validator struct {
 }
 
 func NewValidator() *Validator {
-	return &Validator{
+	v := &Validator{
 		validators: make(map[string]TagValidationFunc),
 	}
+	// register built-in validators
+	v.registerBuiltins()
+	return v
 }
 
 func (v *Validator) RegisterTag(tag string, fn TagValidationFunc) {
@@ -90,7 +93,7 @@ func (v *Validator) proceedTags(fieldValue reflect.Value, fieldType reflect.Stru
 		}
 
 		// special handling for each={...}
-		if tagKey == "each" {
+		if tagKey == eachTag {
 			// only applicable to slices/arrays
 			kind := fieldValue.Kind()
 			if kind != reflect.Slice && kind != reflect.Array {
