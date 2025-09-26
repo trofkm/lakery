@@ -77,7 +77,15 @@ var _ = Describe("Validator", func() {
 			}
 			v := lakery.NewValidator()
 			s := S{Creds: []string{"a", "bb", "ccc"}}
-			Expect(v.Validate(s)).To(Succeed())
+			Expect(v.Validate(s)).To(MatchError(ContainSubstring("unclosed braces")))
+		})
+		It("unopened parantheses with no params", func() {
+			type S struct {
+				Creds []string `lakery:"each:}"`
+			}
+			v := lakery.NewValidator()
+			s := S{Creds: []string{"a", "bb", "ccc"}}
+			Expect(v.Validate(s)).To(MatchError(ContainSubstring("unopened braces")))
 		})
 		It("unclosed parantheses with no params", func() {
 			type S struct {
@@ -85,7 +93,7 @@ var _ = Describe("Validator", func() {
 			}
 			v := lakery.NewValidator()
 			s := S{Creds: []string{"a", "bb", "ccc"}}
-			Expect(v.Validate(s)).To(Succeed())
+			Expect(v.Validate(s)).To(MatchError(ContainSubstring("unclosed braces")))
 		})
 	})
 
