@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, devel ]
+  pull_request:
+    branches: [ main, devel ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build, Vet, Test (Go ${{ matrix.go-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [ 'stable', 'oldstable' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          check-latest: true
+          cache: true
+
+      - name: Go version
+        run: go version
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Check formatting
+        run: |
+          fmtout=$(gofmt -s -l .)
+          if [ -n "$fmtout" ]; then
+            echo "The following files are not gofmt'ed:" >&2
+            echo "$fmtout" >&2
+            exit 1
+          fi
+
+      - name: Test
+        run: |
+          go test -race -count=1 -covermode=atomic -coverprofile=coverage.out ./...
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.go-version }}
+          path: coverage.out
+          if-no-files-found: ignore
+
+

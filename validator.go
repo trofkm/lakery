@@ -34,7 +34,7 @@ func (v *Validator) RegisterTag(tag string, fn TagValidationFunc) {
 func (v *Validator) ListValidators() []string {
 	// cache? not necessary since it is probably not very often to call
 	vals := make([]string, 0, len(v.validators))
-	for k, _ := range v.validators {
+	for k := range v.validators {
 		vals = append(vals, k)
 	}
 	return vals
