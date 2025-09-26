@@ -21,8 +21,10 @@ func noSpacesValidator(lk *lakery.Value) error {
 	}
 	return nil
 }
+
+// example of custom error formatter
 func ruErrorFormat(fieldType reflect.StructField, fieldValue reflect.Value, err error) error {
-	return fmt.Errorf("Ошибка валидации: '%w' для поля %q  (получено: '%v')", err, fieldType.Name, fieldValue)
+	return fmt.Errorf("ошибка валидации: '%w' для поля %q  (получено: '%v')", err, fieldType.Name, fieldValue)
 }
 
 func main() {
