@@ -16,7 +16,6 @@ const (
 // credentialValidator enforces a basic credential format: letters, digits, underscore, dash only
 func credentialValidator(lk *lakery.Value) error {
 	val := lk.String()
-	// simple pattern: 1-64 of [a-zA-Z0-9_-]
 	var re = regexp.MustCompile(`^[a-zA-Z0-9_-]*$`)
 	if !re.MatchString(val) {
 		return fmt.Errorf("should contain only letters, numbers, '_' or '-'")
