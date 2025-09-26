@@ -1,0 +1,8 @@
+# IDEs
+.idea
+.vscode
+.zed
+
+
+# Coverage
+coverage.out
