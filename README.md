@@ -9,6 +9,7 @@ Lakery is a tiny, dependency-free, tag-based validation library for Go. Define v
 - **Collection rules** — `each={...}` applies validators to every element of a slice/array
 - **Pluggable validators** — register custom tags easily
 - **Custom error formatting** — control how validation errors are presented
+- **Build-time validation** — use `go:generate` to catch tag syntax errors at compile time
 
 ## 🚀 Quick Start
 
@@ -145,6 +146,49 @@ The suite covers:
 - `each={...}` validation on string slices
 - Custom error formatting
 
+## 🏗️ Build-time Validation
+
+Lakery includes a `go:generate` tool that validates your struct tags at build time, catching syntax errors and unknown validators before runtime.
+
+### Setup
+
+The `go:generate` directive is already included in the main package:
+
+```go
+//go:generate go run ./cmd/lakery-validate -package .
+```
+
+### Usage
+
+Run validation on your package:
+
+```bash
+go generate
+```
+
+Or run it manually on any package:
+
+```bash
+go run github.com/trofkm/lakery/cmd/lakery-validate -package ./your/package
+```
+
+### What it catches
+
+- **Unknown validators**: References to validators that don't exist
+- **Syntax errors**: Malformed tag syntax like unclosed braces
+- **Parameter validation**: Invalid parameters for built-in validators
+- **Common mistakes**: Like using `each:{}` instead of `each={}`
+
+### Example output
+
+```
+./models/user.go:15:2: lakery tag error in field "Email": unknown validator "email_format" (tag: "email_format,required")
+./models/user.go:18:2: lakery tag error in field "Tags": unclosed braces in "each={min=1,max=20" (tag: "each={min=1,max=20")
+./models/user.go:21:2: lakery tag error in field "Items": invalid syntax "each:{}" - did you mean "each={}"? (tag: "each:{}")
+```
+
+**Note**: Test files (`*_test.go`) are automatically excluded from validation since they often contain intentionally invalid code for testing purposes.
+
 ## 📦 Installation
 
 ```bash
@@ -156,6 +200,7 @@ go get github.com/trofkm/lakery
 - [x] Simple tag validation (e.g., credential, email via custom tags)
 - [x] Validation expressions (e.g., `min=0,max=255`)
 - [x] Collection validation (`each={...}`)
+- [x] Build-time validation with `go:generate`
 - [ ] Dive into nested structs with `dive`
 - [ ] More tests
 

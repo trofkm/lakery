@@ -65,7 +65,7 @@ var _ = Describe("Validator", func() {
 	Context("each with invalid", func() {
 		It("empty parameters", func() {
 			type S struct {
-				Creds []string `lakery:"each:{}"`
+				Creds []string `lakery:"each={}"`
 			}
 			v := lakery.NewValidator()
 			s := S{Creds: []string{"a", "bb", "ccc"}}
@@ -73,7 +73,7 @@ var _ = Describe("Validator", func() {
 		})
 		It("unclosed parantheses with no params", func() {
 			type S struct {
-				Creds []string `lakery:"each:{"`
+				Creds []string `lakery:"each={"`
 			}
 			v := lakery.NewValidator()
 			s := S{Creds: []string{"a", "bb", "ccc"}}
@@ -81,19 +81,28 @@ var _ = Describe("Validator", func() {
 		})
 		It("unopened parantheses with no params", func() {
 			type S struct {
-				Creds []string `lakery:"each:}"`
+				Creds []string `lakery:"each=}"`
 			}
 			v := lakery.NewValidator()
 			s := S{Creds: []string{"a", "bb", "ccc"}}
 			Expect(v.Validate(s)).To(MatchError(ContainSubstring("unopened braces")))
 		})
-		It("unclosed parantheses with no params", func() {
+		It("unclosed parantheses with params", func() {
 			type S struct {
-				Creds []string `lakery:"each:{min=100"`
+				Creds []string `lakery:"each={min=100"`
 			}
 			v := lakery.NewValidator()
 			s := S{Creds: []string{"a", "bb", "ccc"}}
 			Expect(v.Validate(s)).To(MatchError(ContainSubstring("unclosed braces")))
+		})
+		It("invalid colon syntax should be ignored (unknown validator)", func() {
+			type S struct {
+				Creds []string `lakery:"each:{}"`
+			}
+			v := lakery.NewValidator()
+			s := S{Creds: []string{"a", "bb", "ccc"}}
+			// Runtime validator ignores unknown validators, but build-time should catch this
+			Expect(v.Validate(s)).To(Succeed())
 		})
 	})
 

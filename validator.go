@@ -1,5 +1,7 @@
 package lakery
 
+//go:generate go run ./cmd/lakery-validate -package .
+
 import (
 	"errors"
 	"fmt"
