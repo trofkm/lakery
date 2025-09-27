@@ -75,7 +75,10 @@ func (v *Validator) proceedTags(fieldValue reflect.Value, fieldType reflect.Stru
 		return nil
 	}
 
-	tags := splitTopLevelByComma(rootTag)
+	tags, err := splitTopLevelByComma(rootTag)
+	if err != nil {
+		return CurrentErrorFormatFunc(fieldType, fieldValue, err)
+	}
 	for _, tag := range tags {
 		tag = strings.TrimSpace(tag)
 		if tag == "" {
@@ -104,7 +107,10 @@ func (v *Validator) proceedTags(fieldValue reflect.Value, fieldType reflect.Stru
 			if strings.HasPrefix(inner, "{") && strings.HasSuffix(inner, "}") {
 				inner = strings.TrimSpace(inner[1 : len(inner)-1])
 			}
-			innerTags := splitTopLevelByComma(inner)
+			innerTags, err := splitTopLevelByComma(inner)
+			if err != nil {
+				return CurrentErrorFormatFunc(fieldType, fieldValue, err)
+			}
 			for i := 0; i < fieldValue.Len(); i++ {
 				elem := fieldValue.Index(i)
 				for _, it := range innerTags {
@@ -139,7 +145,7 @@ func (v *Validator) proceedTags(fieldValue reflect.Value, fieldType reflect.Stru
 }
 
 // splitTopLevelByComma splits a string by commas, ignoring commas inside curly braces.
-func splitTopLevelByComma(s string) []string {
+func splitTopLevelByComma(s string) ([]string, error) {
 	var parts []string
 	depth := 0
 	last := 0
@@ -148,9 +154,7 @@ func splitTopLevelByComma(s string) []string {
 		case '{':
 			depth++
 		case '}':
-			if depth > 0 {
-				depth--
-			}
+			depth--
 		case ',':
 			if depth == 0 {
 				parts = append(parts, s[last:i])
@@ -159,5 +163,10 @@ func splitTopLevelByComma(s string) []string {
 		}
 	}
 	parts = append(parts, s[last:])
-	return parts
+	if depth < 0 {
+		return nil, fmt.Errorf("unopened braces in %q", s)
+	} else if depth > 0 {
+		return nil, fmt.Errorf("unclosed braces in %q", s)
+	}
+	return parts, nil
 }
